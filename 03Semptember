@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Come September</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0; 
+  padding: 0; 
+  width: 100%;
+  height: 100%;
+  /* 🌹 배경 이미지를 101.5%로 살짝 확대해 오른쪽 끝 흰 세로선을 가립니다 */
+  background: #000 url('https://usanonki.github.io/photo/come.jpg') center/101.5% auto no-repeat;
+  overflow: hidden;
+}
+
+/* 🌸 작은 원형 버튼 */
+.circle-btn {
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 9999;
+  transition: transform 0.25s ease, background 0.25s ease;
+}
+
+.circle-btn:hover {
+  transform: scale(1.15);
+  background: rgba(255,255,255,1);
+}
+
+.circle-btn svg {
+  width: 24px;
+  height: 24px;
+  fill: #e04a7a;
+}
+
+/* 🎵 슬라이드 패널 */
+.audio-panel {
+  position: fixed;
+  right: 20px;
+  bottom: -180px;
+  width: 290px;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(6px);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: bottom 0.4s ease, opacity 0.4s ease;
+  opacity: 0;
+  z-index: 9998;
+}
+
+.audio-panel.show {
+  bottom: 90px;
+  opacity: 1;
+}
+
+/* 🎛️ 좌우 정렬 레이아웃 */
+.control-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  gap: 12px !important;
+}
+
+/* 진행 바 및 볼륨 바 공통 */
+.seek-bar, .volume-bar {
+  flex: 1 !important;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.4);
+  appearance: none;
+  outline: none;
+  margin: 0 !important;
+}
+
+.seek-bar::-webkit-slider-thumb, .volume-bar::-webkit-slider-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  appearance: none;
+  cursor: pointer;
+}
+
+/* 시간 표시 (왼쪽 고정) */
+.time-display {
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  flex-shrink: 0;
+  width: 68px;
+  text-align: left;
+}
+
+/* 음량 아이콘 (왼쪽 고정) */
+.vol-display {
+  font-size: 16px;
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
+  line-height: 1;
+}
+</style>
+</head>
+
+<body>
+
+<!-- 🌸 작은 원형 버튼 -->
+<div class="circle-btn" id="toggle-btn">
+  <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+</div>
+
+<!-- 🎵 슬라이드 패널 -->
+<div class="audio-panel" id="audio-panel">
+  <audio id="audio"
+    src="https://usanonki.github.io/music/ComeSeptember.mp3"
+    preload="auto" loop></audio>
+
+  <!-- 시간 바 행 (왼쪽: 시간 / 오른쪽: 슬라이더) -->
+  <div class="control-row">
+    <div class="time-display" id="time-display">0:00/0:00</div>
+    <input type="range" id="seekBar" class="seek-bar" min="0" max="100" step="0.1" value="0">
+  </div>
+
+  <!-- 음량 바 행 (왼쪽: 아이콘 / 오른쪽: 슬라이더) -->
+  <div class="control-row">
+    <div class="vol-display" id="volIcon">🔉</div>
+    <input type="range" id="volumeBar" class="volume-bar" min="0" max="1" step="0.01" value="0.5">
+  </div>
+</div>
+
+<script>
+const audio = document.getElementById('audio');
+const toggleBtn = document.getElementById('toggle-btn');
+const audioPanel = document.getElementById('audio-panel');
+const seekBar = document.getElementById('seekBar');
+const volumeBar = document.getElementById('volumeBar');
+const timeDisplay = document.getElementById('time-display');
+
+const iconPlay = 'M8 5v14l11-7z';
+const iconPause = 'M6 19h4V5H6v14zm8-14v14h4V5h-4z';
+
+let isPlaying = false;
+let panelVisible = false;
+
+// 패널 토글 + 재생/정지
+toggleBtn.onclick = () => {
+  panelVisible = !panelVisible;
+  audioPanel.classList.toggle('show', panelVisible);
+
+  if (!isPlaying) {
+    audio.play();
+    toggleBtn.querySelector('path').setAttribute('d', iconPause);
+    isPlaying = true;
+  } else {
+    audio.pause();
+    toggleBtn.querySelector('path').setAttribute('d', iconPlay);
+    isPlaying = false;
+  }
+};
+
+// 시간 포맷
+function formatTime(sec) {
+  if (isNaN(sec)) return "0:00";
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+// 메타데이터 로드
+audio.addEventListener('loadedmetadata', () => {
+  seekBar.max = audio.duration;
+  timeDisplay.textContent = `${formatTime(audio.currentTime)}/${formatTime(audio.duration)}`;
+});
+
+// 진행 업데이트
+audio.addEventListener('timeupdate', () => {
+  seekBar.value = audio.currentTime;
+  timeDisplay.textContent = `${formatTime(audio.currentTime)}/${formatTime(audio.duration)}`;
+});
+
+// 진행 바 이동
+seekBar.addEventListener('input', () => {
+  audio.currentTime = seekBar.value;
+});
+
+function updateVolumeIcon(v) {
+  const icon = document.getElementById('volIcon');
+
+  if (v == 0) icon.textContent = "🔇";
+  else if (v < 0.2) icon.textContent = "🔈";
+  else if (v < 0.6) icon.textContent = "🔉";
+  else icon.textContent = "🔊";
+}
+
+// 볼륨 바
+volumeBar.addEventListener('input', () => {
+  audio.volume = volumeBar.value;
+  updateVolumeIcon(volumeBar.value);
+});
+
+// 초기 설정
+updateVolumeIcon(volumeBar.value);
+</script>
+
+</body>
+</html>
