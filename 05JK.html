@@ -8,9 +8,7 @@
   body {
     margin: 0;
     height: 100vh;
-    background: url('https://usanonki.github.io/photo/jk.png') 
-                no-repeat center center;
-    background-size: cover;
+    background: url('https://usanonki.github.io/photo/jk.png') no-repeat center/cover;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -19,9 +17,7 @@
     font-family: sans-serif;
     text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
   }
-  h1 {
-    margin-bottom: 8px;
-  }
+  h1 { margin-bottom: 8px; }
   .track-list {
     list-style: none;
     padding: 0;
@@ -34,9 +30,7 @@
     cursor: pointer;
     transition: color 0.3s, font-weight 0.3s;
   }
-  .track-list li:hover {
-    color: #90caf9;
-  }
+  .track-list li:hover { color: #90caf9; }
   .track-list li.active {
     color: #ffeb3b;
     font-weight: bold;
@@ -51,6 +45,7 @@
 <body>
 
 <h1>🎵 JK`s(단무지) Playlist</h1>
+
 <ul class="track-list" id="trackList">
   <li>그사람</li>
   <li>목마른 소녀</li>
@@ -61,7 +56,6 @@
 <audio id="musicPlayer" controls></audio>
 
 <script>
-// 곡 목록 (제목 + URL)
 const playlist = [
   { title: "그사람", url: "https://usanonki.github.io/music/그사람.mp3" },
   { title: "목마른 소녀", url: "https://usanonki.github.io/music/목마른소녀.mp3" },
@@ -69,40 +63,27 @@ const playlist = [
   { title: "벌써 일년", url: "https://usanonki.github.io/music/벌써일년.mp3" }
 ];
 
-let currentIndex = 0;
 const player = document.getElementById("musicPlayer");
-const trackListItems = document.querySelectorAll("#trackList li");
+const items = document.querySelectorAll("#trackList li");
+let index = 0;
 
-// 곡 재생 함수
-function playTrack(index) {
-  currentIndex = index;
-  player.src = playlist[index].url;
+// 곡 재생
+function play(i) {
+  index = i;
+  player.src = playlist[i].url;
   player.play();
-  updateActiveTrack(index);
+  items.forEach((li, n) => li.classList.toggle("active", n === i));
 }
 
-// 현재 재생 곡 하이라이트
-function updateActiveTrack(index) {
-  trackListItems.forEach((item, i) => {
-    item.classList.toggle("active", i === index);
-  });
-}
+// 리스트 클릭
+items.forEach((li, i) => li.onclick = () => play(i));
 
-// 곡 클릭 시 해당 곡 재생
-trackListItems.forEach((item, index) => {
-  item.addEventListener("click", () => {
-    playTrack(index);
-  });
-});
+// 자동 다음 곡
+player.onended = () => play((index + 1) % playlist.length);
 
-// 곡이 끝나면 다음 곡 재생 (무한 반복)
-player.addEventListener("ended", () => {
-  currentIndex = (currentIndex + 1) % playlist.length;
-  playTrack(currentIndex);
-});
-
-// 첫 곡 재생 시작
-playTrack(currentIndex);
+// 초기 설정
+player.volume = 0.35;
+play(0);
 </script>
 
 </body>
