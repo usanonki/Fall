@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Maestra`s Simple Player Template</title>
+
+<style>
+  /* =========================================================
+     [템플릿 설정 영역] 배경이나 디자인 변경 시 이 부분만 수정하자!
+     ========================================================= */
+  :root {
+    /* 1. 전체 포인트 테마 컬러 (아이콘, 텍스트, 바) */
+    --player-color: #ffffff;
+
+    /* 2. 플레이어 수평/수직 위치 설정.지금은 중앙정열임 */
+    --player-position-x: 50%;     /* 좌: 30px | 중앙: 50% | 우: auto (오른쪽 이동시 right 속성 사용) */
+    --player-position-y: 40px;    /* 화면 바닥(bottom)에서 떨어진 거리 */
+    --player-translateX: -50%;    /* 중앙 정렬 시 -50%, 좌측/우측 정렬 시 0% 설정 */
+
+    /* 3. 배경 이미지 대비 가독성 옵션 */
+    --text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); /* 글씨 그림자 (복잡한 배경에서 유용) */
+    --bg-blur: rgba(0, 0, 0, 0.25);             /* 플레이어 배경 반투명 상자 (필요없을 경우 transparent) */
+  }
+
+  body {
+    margin: 0;
+    /* 배경 이미지 경로를 여기서 변경 */
+    background: url('https://usanonki.github.io/photo/zam.gif') center/cover no-repeat;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* 플레이어 컨테이너 (위치 및 가독성) */
+  .player {
+    position: absolute;
+    bottom: var(--player-position-y);
+    left: var(--player-position-x);
+    transform: translateX(var(--player-translateX));
+    
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: sans-serif;
+    color: var(--player-color);
+    text-shadow: var(--text-shadow);
+
+    /* 복잡한 배경에서도 요소를 명확히 보여주는 유용한 배경 스타일 (선택사항) */
+    /*background: var(--bg-blur);
+    padding: 8px 16px;
+    border-radius: 30px;
+    backdrop-filter: blur(4px); /* 배경을 살짝 흐리게 처리 */
+    
+  }
+
+  /* 아이콘 버튼 공통 */
+  .icon-btn {
+    background: none;
+    border: none;
+    color: var(--player-color);
+    cursor: pointer;
+    padding: 0;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s ease, opacity 0.2s ease;
+    filter: drop-shadow(var(--text-shadow));
+  }
+
+  .icon-btn svg {
+    fill: var(--player-color);
+    width: 18px;
+    height: 18px;
+  }
+
+  .icon-btn:hover {
+    opacity: 0.8;
+  }
+
+  .icon-btn:active {
+    transform: scale(0.9);
+  }
+
+  /* 진행 바 트랙 */
+  .progress {
+    width: 240px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+    transition: width 0.3s ease;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--player-color);
+    width: 0%;
+    border-radius: 2px;
+    box-shadow: var(--text-shadow);
+  }
+
+  /* 볼륨 컨테이너 */
+  .volume-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+
+  /* 음량 슬라이더 펼침 애니메이션 */
+  .volume-slider-wrapper {
+    width: 0;
+    overflow: hidden;
+    transition: width 0.3s ease;
+    display: flex;
+    align-items: center;
+  }
+
+  .volume-slider {
+    width: 80px;
+    height: 4px;
+    margin: 0 8px 0 0;
+    cursor: pointer;
+    accent-color: var(--player-color);
+    vertical-align: middle;
+  }
+
+  /* 호버 시 재생 바 수축 및 음량 바 확장 연출 */
+  .volume-container:hover .volume-slider-wrapper {
+    width: 88px;
+  }
+
+  .volume-container:hover ~ .progress,
+  .player:has(.volume-container:hover) .progress {
+    width: 152px;
+  }
+
+  /* 곡 리스트 위치 설정 */
+  .song-list {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: var(--player-color);
+    text-shadow: var(--text-shadow);
+    font-family: sans-serif;
+  }
+
+  .song {
+    cursor: pointer;
+    margin-bottom: 5px;
+    opacity: 0.7;
+  }
+
+  .song.active {
+    opacity: 1;
+    font-weight: bold;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="song-list">
+  <div class="song" data-src="https://64.media.tumblr.com/1df5551c06183148c255e0ae1abddb0e/9a137b006b44716f-0d/c56793820ef1c238c4cbe2eca21562af3f38fcd8.mp3">사랑비</div>
+  <div class="song" data-src="https://blog.kakaocdn.net/dn/bxnLbW/btsmBh8jZlx/6atptcl5UaarAckFRjtA01/tfile.mp3">인연</div>
+  <div class="song" data-src="http://a.tumblr.com/tumblr_q1mdz8xm1t1yr33tko1.mp3 ">우울한 우연</div>
+  <div class="song" data-src="https://usanonki.github.io/music/아시나요.mp3">아시나요</div>
+</div>
+
+<div class="player">
+  <button id="playPause" class="icon-btn">▶</button>
+
+  <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+
+  <div class="progress" id="progress">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <div class="volume-container">
+    <div class="volume-slider-wrapper">
+      <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" value="0.4">
+    </div>
+    <button class="icon-btn volume-btn" aria-label="Volume">
+      <svg width="18" height="18" viewBox="0 0 24 24">
+        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<audio id="audio"></audio>
+
+<script>
+const audio = document.getElementById('audio');
+const playPause = document.getElementById('playPause');
+const progress = document.getElementById('progress');
+const progressBar = document.getElementById('progressBar');
+const currentTime = document.getElementById('currentTime');
+const duration = document.getElementById('duration');
+const volumeSlider = document.getElementById('volumeSlider');
+const songs = document.querySelectorAll('.song');
+
+let currentSong = 0;
+
+function loadSong(index) {
+  songs.forEach(s => s.classList.remove('active'));
+  songs[index].classList.add('active');
+  audio.src = songs[index].dataset.src;
+  audio.load();
+}
+
+loadSong(currentSong);
+
+playPause.addEventListener('click', () => {
+  if (audio.paused) {
+    audio.play();
+    playPause.textContent = '⏸';
+  } else {
+    audio.pause();
+    playPause.textContent = '▶';
+  }
+});
+
+audio.addEventListener('timeupdate', () => {
+  if (!isNaN(audio.duration)) {
+    const percent = (audio.currentTime / audio.duration) * 100;
+    progressBar.style.width = percent + '%';
+    currentTime.textContent = formatTime(audio.currentTime);
+    duration.textContent = formatTime(audio.duration);
+  }
+});
+
+progress.addEventListener('click', (e) => {
+  const clickX = e.offsetX;
+  const width = progress.clientWidth;
+  if (!isNaN(audio.duration)) {
+    audio.currentTime = (clickX / width) * audio.duration;
+  }
+});
+
+volumeSlider.addEventListener('input', () => {
+  audio.volume = volumeSlider.value;
+});
+
+songs.forEach((song, index) => {
+  song.addEventListener('click', () => {
+    loadSong(index);
+    audio.play();
+    playPause.textContent = '⏸';
+  });
+});
+
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${s < 10 ? '0' : ''}${s}`;
+}
+</script>
+
+</body>
+</html>
