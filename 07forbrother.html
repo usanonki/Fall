@@ -229,6 +229,8 @@ const volumeSlider = document.getElementById('volumeSlider');
 const songs = document.querySelectorAll('.song');
 
 let currentSong = 0;
+// ★ 시작 볼륨 40% 설정
+audio.volume = 0.4;
 
 function loadSong(index) {
   songs.forEach(s => s.classList.remove('active'));
@@ -272,10 +274,19 @@ volumeSlider.addEventListener('input', () => {
 
 songs.forEach((song, index) => {
   song.addEventListener('click', () => {
+    currentSong = index;          // 현재 곡 인덱스 동기화
     loadSong(index);
     audio.play();
     playPause.textContent = '⏸';
   });
+});
+
+// ★ 곡이 끝나면 다음 곡으로, 마지막 곡이면 처음으로 돌아가서 자동 재생
+audio.addEventListener('ended', () => {
+  currentSong = (currentSong + 1) % songs.length;  // 마지막이면 0으로 순환
+  loadSong(currentSong);
+  audio.play();
+  playPause.textContent = '⏸';
 });
 
 function formatTime(sec) {
